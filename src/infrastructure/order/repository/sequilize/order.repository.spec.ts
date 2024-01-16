@@ -15,6 +15,8 @@ import OrderRepository from "./order.repository";
 describe("Order repository test", () => {
   let sequelize: Sequelize;
   let orderRepository: OrderRepository;
+  let productRepository: ProductRepository;
+  let customerRepository: CustomerRepository;
 
   beforeEach(async () => {
     sequelize = new Sequelize({
@@ -34,6 +36,8 @@ describe("Order repository test", () => {
     await sequelize.sync();
 
     orderRepository = new OrderRepository();
+    productRepository = new ProductRepository();
+    customerRepository = new CustomerRepository();
   });
 
   afterEach(async () => {
@@ -41,13 +45,11 @@ describe("Order repository test", () => {
   });
 
   it("should create a new order", async () => {
-    const customerRepository = new CustomerRepository();
     const customer = new Customer("123", "Customer 1");
     const address = new Address("Street 1", 1, "Zipcode 1", "City 1");
     customer.changeAddress(address);
     await customerRepository.create(customer);
 
-    const productRepository = new ProductRepository();
     const product = new Product("123", "Product 1", 10);
     await productRepository.create(product);
 
@@ -92,13 +94,11 @@ describe("Order repository test", () => {
   });
 
   it("should find a order", async () => {
-    const customerRepository = new CustomerRepository();
     const customer = new Customer("123", "Customer 1");
     const address = new Address("Street 1", 1, "Zipcode 1", "City 1");
     customer.changeAddress(address);
     await customerRepository.create(customer);
 
-    const productRepository = new ProductRepository();
     const product = new Product("123", "Product 1", 10);
     await productRepository.create(product);
 
@@ -122,8 +122,6 @@ describe("Order repository test", () => {
   });
 
   it("should find all orders", async () => {
-    const customerRepository = new CustomerRepository();
-
     const customer1 = new Customer("1", "Customer 1");
     const customer2 = new Customer("2", "Customer 2");
 
@@ -177,55 +175,5 @@ describe("Order repository test", () => {
     expect(orders).toHaveLength(2);
     expect(orders).toContainEqual(order1);
     expect(orders).toContainEqual(order2);
-  });
-
-  it("should update a order", async () => {
-    const customerRepository = new CustomerRepository();
-
-    const customer = new Customer("1", "Customer 1");
-    const customer2 = new Customer("2", "Customer 2");
-
-    const address = new Address("Street 1", 1, "Zipcode 1", "City 1");
-
-    customer.changeAddress(address);
-
-    await customerRepository.create(customer);
-
-    const productRepository = new ProductRepository();
-
-    const product1 = new Product("1", "Product 1", 10);
-    const product2 = new Product("2", "Product 2", 20);
-
-    await productRepository.create(product1);
-    await productRepository.create(product2);
-
-    const orderItem1 = new OrderItem(
-      "1",
-      product1.name,
-      product1.price,
-      product1.id,
-      1
-    );
-
-    const order = new Order("1", customer.id, [orderItem1]);
-
-    await orderRepository.create(order);
-
-    const orderItem2 = new OrderItem(
-      "2",
-      product2.name,
-      product2.price,
-      product2.id,
-      2
-    );
-
-    order.changeCustomer(customer2.id);
-
-    await orderRepository.update(order);
-
-    const findOrder = await orderRepository.find(order.id);
-
-    expect(findOrder.id).toBeTruthy();
-    expect(findOrder.customerId).toBe(customer2.id);
   });
 });

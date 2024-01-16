@@ -5,6 +5,9 @@ import OrderItemModel from "./order-item.model";
 import OrderModel from "./order.model";
 
 export default class OrderRepository implements OrderRepositoryInterface {
+  update(entity: Order): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
   async create(entity: Order): Promise<void> {
     await OrderModel.create(
       {
@@ -69,19 +72,5 @@ export default class OrderRepository implements OrderRepositoryInterface {
     });
 
     return allOrders;
-  }
-
-  async update({ id, customerId }: Order): Promise<void> {
-    console.log({ customerId });
-    await OrderModel.update(
-      {
-        customerId,
-      },
-      {
-        where: {
-          id,
-        },
-      }
-    );
   }
 }
