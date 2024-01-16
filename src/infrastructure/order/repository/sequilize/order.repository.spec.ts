@@ -176,4 +176,46 @@ describe("Order repository test", () => {
     expect(orders).toContainEqual(order1);
     expect(orders).toContainEqual(order2);
   });
+
+  it("should update a order", async () => {
+    const customer = new Customer("1", "Customer 1");
+    const address = new Address("Street 1", 1, "Zipcode 1", "City 1");
+    customer.changeAddress(address);
+    await customerRepository.create(customer);
+
+    const product = new Product("1", "Product 1", 10);
+    await productRepository.create(product);
+
+    const orderItem = new OrderItem(
+      "1",
+      product.name,
+      product.price,
+      product.id,
+      1
+    );
+
+    const order = new Order("1", customer.id, [orderItem]);
+    await orderRepository.create(order);
+
+    const product2 = new Product("2", "Product 2", 20);
+    await productRepository.create(product2);
+
+    const orderItem2 = new OrderItem(
+      "2",
+      product2.name,
+      product2.price,
+      product2.id,
+      2
+    );
+
+    order.addItem(orderItem2);
+
+    await orderRepository.update(order);
+
+    const findOrder = await orderRepository.find(order.id);
+
+    expect(findOrder.id).toBe(order.id);
+    expect(findOrder.items).toHaveLength(order.items.length);
+    expect(findOrder.total()).toBe(order.total());
+  });
 });

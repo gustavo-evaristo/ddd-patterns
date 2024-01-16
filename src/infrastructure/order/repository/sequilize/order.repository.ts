@@ -5,9 +5,6 @@ import OrderItemModel from "./order-item.model";
 import OrderModel from "./order.model";
 
 export default class OrderRepository implements OrderRepositoryInterface {
-  update(entity: Order): Promise<void> {
-    throw new Error("Method not implemented.");
-  }
   async create(entity: Order): Promise<void> {
     await OrderModel.create(
       {
@@ -72,5 +69,30 @@ export default class OrderRepository implements OrderRepositoryInterface {
     });
 
     return allOrders;
+  }
+
+  async update(order: Order): Promise<void> {
+    await OrderModel.sequelize.transaction(async (t) => {
+      await OrderItemModel.destroy({
+        where: { order_id: order.id },
+        transaction: t,
+      });
+
+      const items = order.items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        product_id: item.productId,
+        quantity: item.quantity,
+        order_id: order.id,
+      }));
+
+      await OrderItemModel.bulkCreate(items, { transaction: t });
+
+      await OrderModel.update(
+        { total: order.total() },
+        { where: { id: order.id }, transaction: t }
+      );
+    });
   }
 }
